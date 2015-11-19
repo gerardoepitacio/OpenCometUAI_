@@ -35,18 +35,19 @@ import ij.process.*;
 
 import java.awt.*;
 import java.util.Arrays;
+import java.util.Properties;
 import java.util.Vector;
 
 	public class CometAnalyzer {
-		public static int COMETFIND_BGCORRECT  = 1;
-		public static int HEADFIND_AUTO 	= 2;
-		public static int HEADFIND_PROFILE 	= 4;
-		public static int HEADFIND_BRIGHTEST  	= 8;
+//		public static int COMETFIND_BGCORRECT  = 1;
+//		public static int HEADFIND_AUTO 	= 2;
+//		public static int HEADFIND_PROFILE 	= 4;
+//		public static int HEADFIND_BRIGHTEST  	= 8;
 		private int activeChannel;
+                Properties Options;
 		
-		public Comet[] cometAnalyzerRun(ImagePlus img_orig, int cometOptions) {
-		
-	
+		public Comet[] cometAnalyzerRun(ImagePlus img_orig, Properties Options) {
+                    this.Options = Options;    
 		// ----- Setting up given image
 			ImageProcessor ip = img_orig.getProcessor();
 			// Type of original image
@@ -60,8 +61,8 @@ import java.util.Vector;
 	
 		ImagePlus img_gs = new ImagePlus("tmpimg",ip_gs);
 
-		//----- Global background correction-----
-			if((cometOptions & COMETFIND_BGCORRECT)!=0){
+		//----- Global background correction-----                
+			if(this.IsSelected("bgCorrectCheck") == true){
 				RankFilters rf = new RankFilters();
 				rf.rank(ip_gs, 10.0, RankFilters.MEDIAN);
 				
@@ -75,14 +76,17 @@ import java.util.Vector;
 	
 		// ----- First round of Comet finding ------------
 			Vector<Comet> Comets = new Vector<Comet>();
-			
-			// Threshold finding
+			switch(this.GetIntegerProperty("thresholdingMethod")){
+                            case 0:
+                                // Threshold finding
 			ip_gs.setAutoThreshold("Huang", true, ImageProcessor.BLACK_AND_WHITE_LUT);
 			// Binarization
 			double threshValue = ip_gs.getMinThreshold();
 			setThreshold(ip_gs, (int)threshValue);
 			// Morphology
 			open_ntimes(ip_gs,3,0);
+                                break;
+                        }
 			// Setup particle analyzer
 			int paopts = ParticleAnalyzer.SHOW_NONE | 
 						ParticleAnalyzer.EXCLUDE_EDGE_PARTICLES | 
@@ -254,7 +258,7 @@ import java.util.Vector;
 				setCometParams(comet, ip_gs2);
 				
 				// Find head
-				setupHead(ip_gs2,comet,cometOptions);
+				setupHead(ip_gs2,comet);
 				
 				// Background correction
 				correctBackground(ip_gs2, comet);	
@@ -310,6 +314,36 @@ import java.util.Vector;
 			// Return comets
 			return (Comet[])Comets.toArray(new Comet[Comets.size()]);
 		}
+                
+                private Boolean IsSelected(String P){
+                    if(this.Options.containsKey(P))
+                         return this.Options.getProperty(P).equals("true");
+                    else{
+                            IJ.log(P + ": Property not found.");
+                            System.exit(0);
+                            return false;
+                    }
+                }
+                
+                private int GetIntegerProperty(String P){
+                    if(this.Options.containsKey(P))
+                         return Integer.parseInt(this.Options.getProperty(P));
+                    else{
+                            IJ.log(P + ": Property not found.");
+                            System.exit(0);
+                            return -1;
+                    }
+                }
+                
+                private double GetDoubleProperty(String P){
+                    if(this.Options.containsKey(P))
+                         return Double.parseDouble(this.Options.getProperty(P));
+                    else{
+                            IJ.log(P + ": Property not found.");
+                            System.exit(0);
+                            return -1;
+                    }
+                }
 	
 		private void correctBackground(ImageProcessor ip, Comet comet){
 			int bgHeight = (int)Math.max(comet.height/5.0, 10);
@@ -338,7 +372,7 @@ import java.util.Vector;
 			comet.profileMax = cometAvgMax;
 		}
 		
-		private void setupHead(ImageProcessor ip,Comet comet,int cometOptions){
+		private void setupHead(ImageProcessor ip,Comet comet){
 			// --- Crop the grayscale comet from the original image
 				// Make a grayscale copy of the original image
 				ByteProcessor ipComet = (ByteProcessor)ip.duplicate();
@@ -369,8 +403,9 @@ import java.util.Vector;
 			// --- First stage: find brightest part of comet
 			
 			// Get statistics from the comet
-				IJ.log(cometOptions+"");
-				if ((cometOptions & HEADFIND_AUTO)!=0 || (cometOptions & HEADFIND_BRIGHTEST)!=0){
+				IJ.log(this.Options.values() + "");
+				//if ((cometOptions & HEADFIND_AUTO)!=0 || (cometOptions & HEADFIND_BRIGHTEST)!=0){
+				if (this.IsSelected("headFindingAuto") || this.IsSelected("headFindingBrightest")){
 					// Find the threshold at top 5% of histogram intensities
 					int threshbin = getLocalThresh(comet.histogram, 255, 0.95);
 					
@@ -436,8 +471,11 @@ import java.util.Vector;
 			// ----------------------------------------------
 
 			// --- Second stage: find head based on intensity profile
-			if (((cometOptions & HEADFIND_AUTO)!=0 && headValid==false) 
-					|| (cometOptions & HEADFIND_PROFILE)!=0){
+//			if (((cometOptions & HEADFIND_AUTO)!=0 && headValid==false) 
+//					|| (cometOptions & HEADFIND_PROFILE)!=0){
+			if ((this.IsSelected("headFindingAuto") && headValid==false) 
+					|| this.IsSelected("headFindingProfile")){
+                            
 				int headEdge = getHeadEdge(ip, comet);
 				ip.setRoi(comet.cometRoi);
 	
@@ -640,17 +678,17 @@ import java.util.Vector;
 				Comet comet = Comets.get(i);
 				
 				// Comet should be convex
-				if (comet.convexity < 0.85) {
+				if (comet.convexity < this.GetDoubleProperty("cometMinConvexity")) {
 					comet.status = Comet.INVALID;
 					IJ.log(i+" convexity invalid ("+ comet.convexity + ")");
 					}
 				// Comet shouldn't be too asymmetrical
-				if (comet.symmetry > 0.5){
+				if (comet.symmetry > this.GetDoubleProperty("cometMaxSymmetry")){
 					comet.status = Comet.INVALID;
 					IJ.log(i+" symmetry invalid");
 					}
 				// Comet shouldn't be higher than wide
-				if(comet.hratio > 1.05){
+				if(comet.hratio > this.GetDoubleProperty("cometMaxHRatio")){
 					comet.status = Comet.INVALID;
 					IJ.log(i+" hratio invalid");
 					}
@@ -659,11 +697,11 @@ import java.util.Vector;
 					comet.status = Comet.INVALID;
 					IJ.log(i+" is on edge invalid");
 					}
-				if(comet.centerlineDiff > 0.15){
+				if(comet.centerlineDiff > this.GetDoubleProperty("cometMaxCLDOutler")){
 					if(comet.status==Comet.VALID) comet.status = Comet.OUTLIER;
 					IJ.log(i+" centerline diff too big outlier");
 					}
-				if(comet.centerlineDiff > 0.2){
+				if(comet.centerlineDiff > this.GetDoubleProperty("cometMaxCLDBig")){
 					comet.status = Comet.INVALID;
 					IJ.log(i+" centerline diff too big invalid");
 					}
