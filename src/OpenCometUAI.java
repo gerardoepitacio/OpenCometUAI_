@@ -37,6 +37,7 @@ public class OpenCometUAI extends javax.swing.JFrame implements MouseListener {
     private File[] inFiles;
     private File outDir;
     private int cometOptions;
+    private Configurations Config;
     private static Color labelInvalidColor = new Color(200, 0, 0);
     private static Color labelValidColor = new Color(0, 150, 0);
     private static Color cometValidColor = Color.red;
@@ -45,6 +46,7 @@ public class OpenCometUAI extends javax.swing.JFrame implements MouseListener {
     private static Color cometColor = Color.yellow;
     private static Color headColor = Color.green;
     private static Color tailColor = Color.blue;
+    
 
     public OpenCometUAI(ImageJ parent, String name, boolean modal) {
         initComponents();
@@ -59,7 +61,7 @@ public class OpenCometUAI extends javax.swing.JFrame implements MouseListener {
         DateFormat dateFormat = new SimpleDateFormat("yyyy_MMdd_HHmmss");
         outFileName = "comets_" + dateFormat.format(dateNow);
         outFileNameField.setText(outFileName);
-        Configurations Config = new Configurations();
+        this.Config = new Configurations();
         this.setProperties(Config.getProproperties());
         updateOutputButton.setEnabled(false);
     }
@@ -86,6 +88,16 @@ public class OpenCometUAI extends javax.swing.JFrame implements MouseListener {
             public void run() {
                 ij.util.Java2.setSystemLookAndFeel();
                 OpenCometUAI dialog = new OpenCometUAI(ij.IJ.getInstance(), "OpenComet", false);
+                dialog.addWindowListener(new java.awt.event.WindowAdapter() {
+                    @Override
+                    public void windowClosing(java.awt.event.WindowEvent e) {
+                        dialog.properties.setProperty("bgCorrectCheck", dialog.bgCorrectCheck.isSelected() + "");
+                        dialog.properties.setProperty("headFindingAuto", dialog.headFindingAuto.isSelected() + "");
+                        dialog.properties.setProperty("headFindingProfile", dialog.headFindingProfile.isSelected() + "");
+                        dialog.properties.setProperty("headFindingBrightest", dialog.headFindingBrightest.isSelected() + "");
+                        dialog.Config.saveProperties(dialog.properties);
+                    }
+                });
                 dialog.setVisible(true);
             }
         });
@@ -101,6 +113,7 @@ public class OpenCometUAI extends javax.swing.JFrame implements MouseListener {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        buttonGroup1 = new javax.swing.ButtonGroup();
         jPanel1 = new javax.swing.JPanel();
         liveButton = new javax.swing.JButton();
         updateOutputButton = new javax.swing.JButton();
@@ -153,8 +166,10 @@ public class OpenCometUAI extends javax.swing.JFrame implements MouseListener {
             }
         });
 
+        buttonGroup1.add(headFindingBrightest);
         headFindingBrightest.setText("Brigthest region");
 
+        buttonGroup1.add(headFindingProfile);
         headFindingProfile.setText("Profile analysis");
         headFindingProfile.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -162,6 +177,7 @@ public class OpenCometUAI extends javax.swing.JFrame implements MouseListener {
             }
         });
 
+        buttonGroup1.add(headFindingAuto);
         headFindingAuto.setSelected(true);
         headFindingAuto.setText("Auto");
 
@@ -302,6 +318,7 @@ public class OpenCometUAI extends javax.swing.JFrame implements MouseListener {
 
         jMenu1.setText("File");
 
+        jMenuItem1.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_N, java.awt.event.InputEvent.CTRL_MASK));
         jMenuItem1.setText("New Window");
         jMenuItem1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -322,6 +339,7 @@ public class OpenCometUAI extends javax.swing.JFrame implements MouseListener {
 
         jMenu2.setText("Edit");
 
+        jMenuItem3.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_E, java.awt.event.InputEvent.CTRL_MASK));
         jMenuItem3.setText("Configurations");
         jMenuItem3.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -506,6 +524,7 @@ public class OpenCometUAI extends javax.swing.JFrame implements MouseListener {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JCheckBox bgCorrectCheck;
+    private javax.swing.ButtonGroup buttonGroup1;
     private javax.swing.JRadioButton headFindingAuto;
     private javax.swing.JRadioButton headFindingBrightest;
     private javax.swing.JRadioButton headFindingProfile;

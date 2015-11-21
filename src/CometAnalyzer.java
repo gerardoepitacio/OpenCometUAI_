@@ -674,37 +674,48 @@ import java.util.Vector;
 		
 		private int setValidity(Vector<Comet> Comets, ImageProcessor ip){
 			int validCount = 0;
+                        double cometMinArea         = GetDoubleProperty("cometMinArea");
+                        double cometMinConvexity    = GetDoubleProperty("cometMinConvexity");
+                        double cometMaxSymmetry     = GetDoubleProperty("cometMaxSymmetry");
+                        double cometMaxHRatio       = GetDoubleProperty("cometMaxHRatio");
+                        double cometMaxCLDOutler    = GetDoubleProperty("cometMaxCLDOutler");
+                        double cometMaxCLDBig       = GetDoubleProperty("cometMaxCLDBig");
+                        boolean cometClearEdges     = IsSelected("cometClearEdges");
+                        
 			for(int i=0;i<Comets.size();i++){
 				Comet comet = Comets.get(i);
-				
 				// Comet should be convex
-				if (comet.convexity < this.GetDoubleProperty("cometMinConvexity")) {
+				if (comet.convexity < cometMinConvexity) {
 					comet.status = Comet.INVALID;
-					IJ.log(i+" convexity invalid ("+ comet.convexity + ")");
+					IJ.log(i+" convexity is too small, invalid ("+ comet.convexity + ")");
 					}
 				// Comet shouldn't be too asymmetrical
-				if (comet.symmetry > this.GetDoubleProperty("cometMaxSymmetry")){
+				if (comet.symmetry > cometMaxSymmetry){
 					comet.status = Comet.INVALID;
-					IJ.log(i+" symmetry invalid");
+					IJ.log(i+" symmetry too big, invalid");
 					}
 				// Comet shouldn't be higher than wide
-				if(comet.hratio > this.GetDoubleProperty("cometMaxHRatio")){
+				if(comet.hratio > cometMaxHRatio){
 					comet.status = Comet.INVALID;
-					IJ.log(i+" hratio invalid");
+					IJ.log(i+" hratio too big, invalid");
 					}
 				// Comet shouldn't be on border
-				if(isOnEdge(ip,comet.cometRoi)){
+				if(cometClearEdges && isOnEdge(ip,comet.cometRoi)){
 					comet.status = Comet.INVALID;
 					IJ.log(i+" is on edge invalid");
 					}
-				if(comet.centerlineDiff > this.GetDoubleProperty("cometMaxCLDOutler")){
+				if (comet.centerlineDiff > cometMaxCLDOutler) {
 					if(comet.status==Comet.VALID) comet.status = Comet.OUTLIER;
 					IJ.log(i+" centerline diff too big outlier");
 					}
-				if(comet.centerlineDiff > this.GetDoubleProperty("cometMaxCLDBig")){
+				if (comet.centerlineDiff > cometMaxCLDBig) { 
 					comet.status = Comet.INVALID;
 					IJ.log(i+" centerline diff too big invalid");
 					}
+                                if(comet.area < cometMinArea){
+                                        comet.status = Comet.INVALID;
+					IJ.log(i+" Area is too small, invalid: "+comet.area);
+                                }
 				if(comet.status == Comet.VALID) validCount++;
 				}
 			return validCount;
