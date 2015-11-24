@@ -16,7 +16,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import javax.swing.InputMap;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JRootPane;
@@ -128,46 +127,17 @@ public class Configurations extends javax.swing.JDialog {
 
         jLabel5.setText("Maximun HRatio");
 
-        cometMaxHRatio.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                cometMaxHRatioActionPerformed(evt);
-            }
-        });
-
         jLabel6.setText("Maximun for OUTLER");
-
-        cometMaxCLDOutler.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                cometMaxCLDOutlerActionPerformed(evt);
-            }
-        });
 
         jLabel8.setText("Center Line Diff");
 
         jLabel9.setText("Maximun for BIG");
 
-        cometMaxCLDBig.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                cometMaxCLDBigActionPerformed(evt);
-            }
-        });
-
         jLabel10.setText("Shape parameters");
 
         jLabel2.setText("Minimun Area (px)");
 
-        cometMinArea.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyReleased(java.awt.event.KeyEvent evt) {
-                cometMinAreaKeyReleased(evt);
-            }
-        });
-
         cometClearEdges.setText("Clear edges");
-        cometClearEdges.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                cometClearEdgesActionPerformed(evt);
-            }
-        });
 
         jLabel11.setText("Edges");
 
@@ -265,37 +235,17 @@ public class Configurations extends javax.swing.JDialog {
         jLabel1.setText("Correction");
 
         bgCorrectCheck.setText("Background correction");
-        bgCorrectCheck.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                bgCorrectCheckActionPerformed(evt);
-            }
-        });
 
         jLabel7.setText("Head finding");
 
         buttonGroup1.add(headFindingAuto);
         headFindingAuto.setText("Auto");
-        headFindingAuto.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                headFindingAutoActionPerformed(evt);
-            }
-        });
 
         buttonGroup1.add(headFindingProfile);
         headFindingProfile.setText("Profile analysis");
-        headFindingProfile.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                headFindingProfileActionPerformed(evt);
-            }
-        });
 
         buttonGroup1.add(headFindingBrightest);
         headFindingBrightest.setText("Brigthest region");
-        headFindingBrightest.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                headFindingBrightestActionPerformed(evt);
-            }
-        });
 
         jLabel12.setText("Method");
 
@@ -402,42 +352,6 @@ public class Configurations extends javax.swing.JDialog {
         this.loadProperties();
         this.setProperties();
     }//GEN-LAST:event_jButton2ActionPerformed
-
-    private void cometClearEdgesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cometClearEdgesActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_cometClearEdgesActionPerformed
-
-    private void cometMinAreaKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_cometMinAreaKeyReleased
-        // TODO add your handling code here:
-    }//GEN-LAST:event_cometMinAreaKeyReleased
-
-    private void cometMaxCLDBigActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cometMaxCLDBigActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_cometMaxCLDBigActionPerformed
-
-    private void cometMaxCLDOutlerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cometMaxCLDOutlerActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_cometMaxCLDOutlerActionPerformed
-
-    private void cometMaxHRatioActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cometMaxHRatioActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_cometMaxHRatioActionPerformed
-
-    private void headFindingBrightestActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_headFindingBrightestActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_headFindingBrightestActionPerformed
-
-    private void headFindingProfileActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_headFindingProfileActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_headFindingProfileActionPerformed
-
-    private void headFindingAutoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_headFindingAutoActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_headFindingAutoActionPerformed
-
-    private void bgCorrectCheckActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bgCorrectCheckActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_bgCorrectCheckActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JCheckBox bgCorrectCheck;

@@ -1,3 +1,4 @@
+
 import ij.IJ;
 import ij.ImageJ;
 import ij.ImagePlus;
@@ -46,7 +47,6 @@ public class OpenCometUAI extends javax.swing.JFrame implements MouseListener {
     private static Color cometColor = Color.yellow;
     private static Color headColor = Color.green;
     private static Color tailColor = Color.blue;
-    
 
     public OpenCometUAI(ImageJ parent, String name, boolean modal) {
         initComponents();
@@ -556,21 +556,7 @@ public class OpenCometUAI extends javax.swing.JFrame implements MouseListener {
         CometAnalyzer cometAnalyzer = new CometAnalyzer();
         Comets = new HashMap<ImagePlus, Comet[]>();
         cometOptions = 0;
-        
-//        // Setup comet analysis options
-//        if (bgCorrectCheck.isSelected()) {
-//            cometOptions |= CometAnalyzer.COMETFIND_BGCORRECT;
-//        }
-//        if (headFindingAuto.isSelected()) {
-//            cometOptions |= CometAnalyzer.HEADFIND_AUTO;
-//        }
-//        if (headFindingProfile.isSelected()) {
-//            cometOptions |= CometAnalyzer.HEADFIND_PROFILE;
-//        }
-//        if (headFindingBrightest.isSelected()) {
-//            cometOptions |= CometAnalyzer.HEADFIND_BRIGHTEST;
-//        }
-        
+
         String tmpText = outFileNameField.getText();
         if ((tmpText != null) && (tmpText.length() > 1)) {
             outFileName = tmpText;
