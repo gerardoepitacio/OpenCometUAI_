@@ -38,6 +38,7 @@ public class OpenCometUAI extends javax.swing.JFrame implements MouseListener {
     private File[] inFiles;
     private File outDir;
     private int cometOptions;
+    private int CurrentPreview = 0;
     private Configurations Config;
     private static Color labelInvalidColor = new Color(200, 0, 0);
     private static Color labelValidColor = new Color(0, 150, 0);
@@ -66,6 +67,18 @@ public class OpenCometUAI extends javax.swing.JFrame implements MouseListener {
         updateOutputButton.setEnabled(false);
     }
 
+    /**
+     * Return true o or false to create the preview.
+     *
+     * @return boolean
+     */
+    public boolean SelectedFiles() {
+        return this.inFiles != null && this.inFiles.length > 0;
+    }
+
+    /**
+     * Start a new OpenComet window.
+     */
     public static void startJDialog() {
         try {
             for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
@@ -488,18 +501,17 @@ public class OpenCometUAI extends javax.swing.JFrame implements MouseListener {
     }//GEN-LAST:event_jMenuItem2ActionPerformed
 
     private void jMenuItem3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem3ActionPerformed
-        // TODO add your handling code here:
-        Configurations ConfigDialog = new Configurations(this, "Configurations", true);
-        ConfigDialog.addWindowListener(new java.awt.event.WindowAdapter() {
+        this.Config = new Configurations(this, "Configurations", true);
+        this.Config.addWindowListener(new java.awt.event.WindowAdapter() {
             @Override
             public void windowClosing(java.awt.event.WindowEvent e) {
-                ConfigDialog.SaveProperties();
-                ConfigDialog.dispose();
+                Config.SaveProperties();
+                Config.dispose();
             }
         });
-        ConfigDialog.setVisible(true);
+        this.Config.setVisible(true);
         System.out.println("Updating Configurations.");
-        this.setProperties(ConfigDialog.getProproperties());
+        this.setProperties(this.Config.getProproperties());
         System.out.println("Configurations updated");
     }//GEN-LAST:event_jMenuItem3ActionPerformed
 
@@ -507,12 +519,94 @@ public class OpenCometUAI extends javax.swing.JFrame implements MouseListener {
         // TODO add your handling code here:
     }//GEN-LAST:event_headFindingProfileActionPerformed
 
-    private void setProperties(Properties p) {
+    /**
+     * Update of settings.
+     *
+     * @param p
+     */
+    public void setProperties(Properties p) {
         this.properties = p;
         this.bgCorrectCheck.setSelected(p.getProperty("bgCorrectCheck").equals("true"));
         this.headFindingAuto.setSelected(p.getProperty("headFindingAuto").equals("true"));
         this.headFindingProfile.setSelected(p.getProperty("headFindingProfile").equals("true"));
         this.headFindingBrightest.setSelected(p.getProperty("headFindingBrightest").equals("true"));
+    }
+
+    /**
+     * Return an ImagePlus[] array with four preview images.
+     *
+     * @return
+     */
+    public ImagePlus[] getPreview() {
+        if (inFiles.length > 0) {
+            ImagePlus imp = IJ.openImage(inFiles[this.CurrentPreview].getPath());
+
+            CometAnalyzer analizer = new CometAnalyzer();
+            if (imp != null) {
+                String imageKey = inFiles[0].getName();
+                IJ.log("Preview started, image key: " + imageKey);
+                //Segmentation
+                Comet[] cometsOut = analizer.cometAnalyzerRun(imp, this.properties);
+
+                //For Results
+                int imgType = imp.getType();
+                ColorProcessor ip_out = null;
+                if (imgType == ImagePlus.GRAY8) {
+                    TypeConverter t = new TypeConverter(imp.getProcessor(), false);
+                    ip_out = (ColorProcessor) t.convertToRGB();
+                } else if (imgType == ImagePlus.GRAY16 || imgType == ImagePlus.GRAY32) {
+                    ImageProcessor ip_temp = imp.getProcessor().convertToByte(true);
+                    TypeConverter t = new TypeConverter(ip_temp, false);
+                    ip_out = (ColorProcessor) t.convertToRGB();
+                } else if (imgType == ImagePlus.COLOR_RGB) {
+                    ip_out = (ColorProcessor) (imp.getProcessor().duplicate());
+                } else {
+                    IJ.log("Unhandled image type: " + imgType);
+                }
+
+                String imgOutFileName = imageKey + "_out.tif";
+                ImagePlus img_out = new ImagePlus(imgOutFileName, ip_out);
+
+                if (cometsOut != null && cometsOut.length > 0) {
+                    Overlay cometOverlay = new Overlay();
+                    drawComets(ip_out, cometOverlay, cometsOut);
+                    img_out.setOverlay(cometOverlay);
+                } else {
+                    IJ.log("No comets in image stored.");
+                }
+                ImagePlus PreviewCommets[] = new ImagePlus[4];
+                imp = IJ.openImage(inFiles[this.CurrentPreview].getPath());;
+                ImagePlus PreviewSegmented[] = analizer.GetPreview(imp, properties);
+                System.arraycopy(PreviewSegmented, 0, PreviewCommets, 0, PreviewSegmented.length);
+                PreviewCommets[3] = img_out;
+                IJ.log("Preview complete, image key: " + imageKey);
+                return PreviewCommets;
+            }
+            return null;
+        }
+        return null;
+    }
+
+    /**
+     * Set counter for the next preview image.
+     */
+    public void setNextPreview() {
+        if (this.inFiles.length > (this.CurrentPreview + 1)) {
+            this.CurrentPreview++;
+        } else {
+            this.CurrentPreview = 0;
+        }
+    }
+
+    /**
+     * Set counter for previous image.
+     */
+    public void setBackPreview() {
+        if (this.CurrentPreview - 1 >= 0) {
+            this.CurrentPreview--;
+        } else {
+            this.CurrentPreview = this.inFiles.length - 1;
+        }
     }
 
     /**
@@ -551,6 +645,12 @@ public class OpenCometUAI extends javax.swing.JFrame implements MouseListener {
     private javax.swing.JButton runButton;
     private javax.swing.JButton updateOutputButton;
     // End of variables declaration//GEN-END:variables
+
+    /**
+     * Launch OpenComet's analyzer
+     *
+     * @param type
+     */
     private void runOnInput(int type) {
         // Make an instance of the comet analyzer class
         CometAnalyzer cometAnalyzer = new CometAnalyzer();

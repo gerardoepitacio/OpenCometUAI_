@@ -35,13 +35,49 @@ import java.util.Properties;
 import java.util.Vector;
 
 public class CometAnalyzer {
-//		public static int COMETFIND_BGCORRECT  = 1;
-//		public static int HEADFIND_AUTO 	= 2;
-//		public static int HEADFIND_PROFILE 	= 4;
-//		public static int HEADFIND_BRIGHTEST  	= 8;
 
     private int activeChannel;
     Properties Options;
+
+    public ImagePlus[] GetPreview(ImagePlus img_orig, Properties Options) {
+        ImagePlus[] ImagePreview = new ImagePlus[3];
+        this.Options = Options;
+        ImageProcessor ip = img_orig.getProcessor();
+        int imgOriginalType = img_orig.getType();
+        ByteProcessor ip_gs_template = getGrayscaleCopy(ip, imgOriginalType);
+        ByteProcessor ip_gs = getGrayscaleCopy(ip_gs_template, ImagePlus.GRAY8);
+        ByteProcessor ip_gs2 = getGrayscaleCopy(ip_gs_template, ImagePlus.GRAY8);
+
+        ImagePreview[0] = new ImagePlus("ORIGINAL", ip_gs.duplicate());
+        ImagePlus img_gs = new ImagePlus("tmpimg", ip_gs);
+        //----- Global background correction-----                
+        if (this.IsSelected("bgCorrectCheck") == true) {
+            RankFilters rf = new RankFilters();
+            //ip_gs grayscale copy from original (1 byte). (ByteProc)
+            rf.rank(ip_gs, 10.0, RankFilters.MEDIAN);
+            BackgroundSubtracter bSub = new BackgroundSubtracter();
+            double radiusRollingBall = Math.min(ip_gs.getHeight(), ip_gs.getWidth()) * 0.3;
+            bSub.rollingBallBackground(ip_gs, radiusRollingBall, false,
+                    false, false, false, true);
+        }
+
+        ImagePreview[1] = new ImagePlus("BG-CORRECTION", ip_gs.duplicate());
+
+        // ----- First round of Comet finding ------------
+        Vector<Comet> Comets = new Vector<Comet>();
+        switch (this.GetIntegerProperty("thresholdingMethod")) {
+            case 0:
+                ip_gs.setAutoThreshold("Huang", true, ImageProcessor.BLACK_AND_WHITE_LUT);
+                // Binarization
+                double threshValue = ip_gs.getMinThreshold();
+                setThreshold(ip_gs, (int) threshValue);
+                // Morphology
+                open_ntimes(ip_gs, 3, 0);
+                break;
+        }
+        ImagePreview[2] = new ImagePlus("BINARIZATION", ip_gs.duplicate());
+        return ImagePreview;
+    }
 
     public Comet[] cometAnalyzerRun(ImagePlus img_orig, Properties Options) {
         this.Options = Options;

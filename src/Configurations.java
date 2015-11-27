@@ -1,5 +1,11 @@
 
+import ij.ImagePlus;
+import java.awt.Color;
+import java.awt.Image;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowEvent;
@@ -16,25 +22,87 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
+import javax.swing.JLabel;
 import javax.swing.JRootPane;
 import javax.swing.KeyStroke;
+import javax.swing.Timer;
 
 public class Configurations extends javax.swing.JDialog {
 
     Properties properties;
+    private OpenCometUAI Principal;
+    private ImagePlus Images[];
+    public static final int RESULTS_PREVIEW = 3;
+    public static final int SEGMENTED_PREVIEW = 2;
+    public static final int CORRECTION_PREVIEW = 1;
+    public static final int ORIGINAL_PREVIEW = 0;
 
     public Configurations() {
         loadProperties();
     }
 
-    public Configurations(java.awt.Frame parent, String name, boolean modal) {
+    public Configurations(OpenCometUAI parent, String name, boolean modal) {
         super(parent, name, modal);
         initComponents();
+        this.Principal = parent;
         this.setLocationRelativeTo(ij.IJ.getInstance());
         this.loadProperties();
         this.setProperties();
+        DoubleValidation();
+        TextSelect();
+        installEscapeCloseOperation(this);
+        if (this.Principal.SelectedFiles() == true) {
+            this.jPPreview.setVisible(true);
+            this.jBPreview.setEnabled(true);
+            this.jPButtons.setVisible(true);
+            this.addComponentListener(new resizeListener());
+            this.pack();
+            this.GetPreview();
+        } else {
+            this.jTPPreview.setVisible(false);
+            this.jBPreview.setEnabled(false);
+            this.jPButtons.setVisible(false);
+            this.pack();
+        }
+    }
+
+    class resizeListener extends ComponentAdapter {
+
+        public void componentResized(ComponentEvent e) {
+            if (ResizedTimer.isRunning()) {
+                ResizedTimer.restart();
+            } else {
+                ResizedTimer.start();
+            }
+        }
+    }
+
+    Timer ResizedTimer = new Timer(5, new ActionListener() {
+        public void actionPerformed(ActionEvent e) {
+            ResizedTimer.stop();
+            setLabelImage(jPResults, Images[RESULTS_PREVIEW]);
+            setLabelImage(jPCorrectons, Images[CORRECTION_PREVIEW]);
+            setLabelImage(jPSegmented, Images[SEGMENTED_PREVIEW]);
+        }
+    });
+
+    private void setLabelImage(javax.swing.JPanel panel, ImagePlus img) {
+        Image image = img.getImage();
+        if (img.getHeight() > panel.getHeight()) {
+            Double Dif = (1.0 - ((double) panel.getHeight() / (double) img.getHeight()));
+            image = img.getImage().getScaledInstance(img.getWidth() - (int) (img.getWidth() * Dif),
+                    img.getHeight() - (int) (img.getHeight() * Dif), Image.SCALE_AREA_AVERAGING);
+        }
+        JLabel picLabel = (JLabel) panel.getComponent(0);
+        picLabel.setIcon(new ImageIcon(image));
+        picLabel.setBounds(0, 0, panel.getWidth(), panel.getHeight());
+        panel.repaint();
+    }
+
+    private void DoubleValidation() {
         //validate if is a double number when key released
         new ValidateDoubleNumber(this.cometMinArea);
         new ValidateDoubleNumber(this.cometMinConvexity);
@@ -42,7 +110,9 @@ public class Configurations extends javax.swing.JDialog {
         new ValidateDoubleNumber(this.cometMaxHRatio);
         new ValidateDoubleNumber(this.cometMaxCLDOutler);
         new ValidateDoubleNumber(this.cometMaxCLDBig);
+    }
 
+    private void TextSelect() {
         //select text when gained Focus
         new SelectionText(this.cometMinArea);
         new SelectionText(this.cometMinConvexity);
@@ -50,7 +120,6 @@ public class Configurations extends javax.swing.JDialog {
         new SelectionText(this.cometMaxHRatio);
         new SelectionText(this.cometMaxCLDOutler);
         new SelectionText(this.cometMaxCLDBig);
-        this.installEscapeCloseOperation(this);
     }
 
     private static final KeyStroke escapeStroke
@@ -115,6 +184,15 @@ public class Configurations extends javax.swing.JDialog {
         jSeparator9 = new javax.swing.JSeparator();
         jLabel12 = new javax.swing.JLabel();
         jButton2 = new javax.swing.JButton();
+        jBPreview = new javax.swing.JButton();
+        jPPreview = new javax.swing.JPanel();
+        jTPPreview = new javax.swing.JTabbedPane();
+        jPSegmented = new javax.swing.JPanel();
+        jPCorrectons = new javax.swing.JPanel();
+        jPResults = new javax.swing.JPanel();
+        jPButtons = new javax.swing.JPanel();
+        jBPrevious = new javax.swing.JButton();
+        jBNextPreview = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setResizable(false);
@@ -322,25 +400,126 @@ public class Configurations extends javax.swing.JDialog {
             }
         });
 
+        jBPreview.setText("Preview");
+        jBPreview.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jBPreviewActionPerformed(evt);
+            }
+        });
+
+        jTPPreview.setBorder(javax.swing.BorderFactory.createEtchedBorder());
+
+        javax.swing.GroupLayout jPSegmentedLayout = new javax.swing.GroupLayout(jPSegmented);
+        jPSegmented.setLayout(jPSegmentedLayout);
+        jPSegmentedLayout.setHorizontalGroup(
+            jPSegmentedLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 598, Short.MAX_VALUE)
+        );
+        jPSegmentedLayout.setVerticalGroup(
+            jPSegmentedLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 346, Short.MAX_VALUE)
+        );
+
+        jTPPreview.addTab("Segmented", jPSegmented);
+
+        javax.swing.GroupLayout jPCorrectonsLayout = new javax.swing.GroupLayout(jPCorrectons);
+        jPCorrectons.setLayout(jPCorrectonsLayout);
+        jPCorrectonsLayout.setHorizontalGroup(
+            jPCorrectonsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 598, Short.MAX_VALUE)
+        );
+        jPCorrectonsLayout.setVerticalGroup(
+            jPCorrectonsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 346, Short.MAX_VALUE)
+        );
+
+        jTPPreview.addTab("Corrections", jPCorrectons);
+
+        javax.swing.GroupLayout jPResultsLayout = new javax.swing.GroupLayout(jPResults);
+        jPResults.setLayout(jPResultsLayout);
+        jPResultsLayout.setHorizontalGroup(
+            jPResultsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 598, Short.MAX_VALUE)
+        );
+        jPResultsLayout.setVerticalGroup(
+            jPResultsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 346, Short.MAX_VALUE)
+        );
+
+        jTPPreview.addTab("Results", jPResults);
+
+        jBPrevious.setText("Previous");
+        jBPrevious.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jBPreviousActionPerformed(evt);
+            }
+        });
+
+        jBNextPreview.setText("Next");
+        jBNextPreview.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jBNextPreviewActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout jPButtonsLayout = new javax.swing.GroupLayout(jPButtons);
+        jPButtons.setLayout(jPButtonsLayout);
+        jPButtonsLayout.setHorizontalGroup(
+            jPButtonsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPButtonsLayout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(jBPrevious, javax.swing.GroupLayout.PREFERRED_SIZE, 90, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(18, 18, 18)
+                .addComponent(jBNextPreview, javax.swing.GroupLayout.PREFERRED_SIZE, 90, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(203, 203, 203))
+        );
+        jPButtonsLayout.setVerticalGroup(
+            jPButtonsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPButtonsLayout.createSequentialGroup()
+                .addGap(0, 0, Short.MAX_VALUE)
+                .addGroup(jPButtonsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jBPrevious)
+                    .addComponent(jBNextPreview)))
+        );
+
+        javax.swing.GroupLayout jPPreviewLayout = new javax.swing.GroupLayout(jPPreview);
+        jPPreview.setLayout(jPPreviewLayout);
+        jPPreviewLayout.setHorizontalGroup(
+            jPPreviewLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jTPPreview)
+            .addComponent(jPButtons, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+        );
+        jPPreviewLayout.setVerticalGroup(
+            jPPreviewLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPPreviewLayout.createSequentialGroup()
+                .addComponent(jTPPreview)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jPButtons, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+        );
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addComponent(jTabbedPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 239, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 0, Short.MAX_VALUE))
-            .addGroup(layout.createSequentialGroup()
-                .addGap(29, 29, 29)
-                .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 174, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jTabbedPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 239, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 156, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jBPreview)))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jPPreview, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addComponent(jTabbedPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 382, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jButton2)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jButton2)
+                    .addComponent(jBPreview)))
+            .addComponent(jPPreview, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
 
         pack();
@@ -352,6 +531,48 @@ public class Configurations extends javax.swing.JDialog {
         this.loadProperties();
         this.setProperties();
     }//GEN-LAST:event_jButton2ActionPerformed
+
+    private void jBPreviewActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBPreviewActionPerformed
+        this.GetPreview();
+    }//GEN-LAST:event_jBPreviewActionPerformed
+
+    private void jBPreviousActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBPreviousActionPerformed
+        // TODO add your handling code here:
+        this.Principal.setBackPreview();
+        this.GetPreview();
+    }//GEN-LAST:event_jBPreviousActionPerformed
+
+    private void jBNextPreviewActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBNextPreviewActionPerformed
+        // TODO add your handling code here:
+        this.Principal.setNextPreview();
+        this.GetPreview();
+    }//GEN-LAST:event_jBNextPreviewActionPerformed
+
+    private void GetPreview() {
+        this.SaveProperties();
+        this.loadProperties();
+        this.Principal.setProperties(this.properties);
+        this.Images = this.Principal.getPreview();
+        this.SetImagePreview(this.jPSegmented, this.Images[SEGMENTED_PREVIEW]);
+        this.SetImagePreview(this.jPCorrectons, this.Images[CORRECTION_PREVIEW]);
+        this.SetImagePreview(this.jPResults, this.Images[RESULTS_PREVIEW]);
+    }
+
+    private void SetImagePreview(javax.swing.JPanel panel, ImagePlus img) {
+        panel.removeAll();
+        Image image = img.getImage();
+        if (img.getHeight() > panel.getHeight()) {
+            Double Dif = (1.0 - ((double) panel.getHeight() / (double) img.getHeight()));
+            image = img.getImage().getScaledInstance(img.getWidth() - (int) (img.getWidth() * Dif),
+                    img.getHeight() - (int) (img.getHeight() * Dif), Image.SCALE_AREA_AVERAGING);
+        }
+        JLabel picLabel = new JLabel(new ImageIcon(image));
+        picLabel.setBounds(0, 0, panel.getWidth(), panel.getHeight());
+        picLabel.setOpaque(true);
+        picLabel.setBackground(new Color(216, 227, 250));
+        panel.add(picLabel);
+        panel.repaint();
+    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JCheckBox bgCorrectCheck;
@@ -366,6 +587,9 @@ public class Configurations extends javax.swing.JDialog {
     private javax.swing.JRadioButton headFindingAuto;
     private javax.swing.JRadioButton headFindingBrightest;
     private javax.swing.JRadioButton headFindingProfile;
+    private javax.swing.JButton jBNextPreview;
+    private javax.swing.JButton jBPreview;
+    private javax.swing.JButton jBPrevious;
     private javax.swing.JButton jButton2;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
@@ -379,6 +603,11 @@ public class Configurations extends javax.swing.JDialog {
     private javax.swing.JLabel jLabel7;
     private javax.swing.JLabel jLabel8;
     private javax.swing.JLabel jLabel9;
+    private javax.swing.JPanel jPButtons;
+    private javax.swing.JPanel jPCorrectons;
+    private javax.swing.JPanel jPPreview;
+    private javax.swing.JPanel jPResults;
+    private javax.swing.JPanel jPSegmented;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JSeparator jSeparator1;
@@ -389,6 +618,7 @@ public class Configurations extends javax.swing.JDialog {
     private javax.swing.JSeparator jSeparator7;
     private javax.swing.JSeparator jSeparator8;
     private javax.swing.JSeparator jSeparator9;
+    private javax.swing.JTabbedPane jTPPreview;
     private javax.swing.JTabbedPane jTabbedPane1;
     private javax.swing.JComboBox thresholdingMethod;
     // End of variables declaration//GEN-END:variables
