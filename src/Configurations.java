@@ -36,10 +36,8 @@ public class Configurations extends javax.swing.JDialog {
     private OpenCometUAI Principal;
     private ImagePlus Images[];
     public static final int RESULTS_PREVIEW = 3;
-    public static final int SEGMENTED_PREVIEW = 2;
-    public static final int CORRECTION_PREVIEW = 1;
-    public static final int ORIGINAL_PREVIEW = 0;
-
+    public static final int CORRECTION_PREVIEW = 0;
+    public static final int SEGMENTED_PREVIEW = 1;
     public Configurations() {
         loadProperties();
     }
@@ -58,6 +56,7 @@ public class Configurations extends javax.swing.JDialog {
             this.jPPreview.setVisible(true);
             this.jBPreview.setEnabled(true);
             this.jPButtons.setVisible(true);
+            this.setResizable(true);
             this.addComponentListener(new resizeListener());
             this.pack();
             this.GetPreview();
@@ -149,6 +148,20 @@ public class Configurations extends javax.swing.JDialog {
 
         buttonGroup1 = new javax.swing.ButtonGroup();
         jTabbedPane1 = new javax.swing.JTabbedPane();
+        jPanel2 = new javax.swing.JPanel();
+        thresholdingMethod = new javax.swing.JComboBox();
+        jLabel1 = new javax.swing.JLabel();
+        bgCorrectCheck = new javax.swing.JCheckBox();
+        jLabel7 = new javax.swing.JLabel();
+        headFindingAuto = new javax.swing.JRadioButton();
+        headFindingProfile = new javax.swing.JRadioButton();
+        headFindingBrightest = new javax.swing.JRadioButton();
+        jSeparator4 = new javax.swing.JSeparator();
+        jSeparator5 = new javax.swing.JSeparator();
+        jSeparator6 = new javax.swing.JSeparator();
+        jSeparator7 = new javax.swing.JSeparator();
+        jSeparator9 = new javax.swing.JSeparator();
+        jLabel12 = new javax.swing.JLabel();
         jPanel1 = new javax.swing.JPanel();
         jLabel3 = new javax.swing.JLabel();
         cometMinConvexity = new javax.swing.JTextField();
@@ -169,27 +182,13 @@ public class Configurations extends javax.swing.JDialog {
         cometClearEdges = new javax.swing.JCheckBox();
         jSeparator8 = new javax.swing.JSeparator();
         jLabel11 = new javax.swing.JLabel();
-        jPanel2 = new javax.swing.JPanel();
-        thresholdingMethod = new javax.swing.JComboBox();
-        jLabel1 = new javax.swing.JLabel();
-        bgCorrectCheck = new javax.swing.JCheckBox();
-        jLabel7 = new javax.swing.JLabel();
-        headFindingAuto = new javax.swing.JRadioButton();
-        headFindingProfile = new javax.swing.JRadioButton();
-        headFindingBrightest = new javax.swing.JRadioButton();
-        jSeparator4 = new javax.swing.JSeparator();
-        jSeparator5 = new javax.swing.JSeparator();
-        jSeparator6 = new javax.swing.JSeparator();
-        jSeparator7 = new javax.swing.JSeparator();
-        jSeparator9 = new javax.swing.JSeparator();
-        jLabel12 = new javax.swing.JLabel();
         jButton2 = new javax.swing.JButton();
         jBPreview = new javax.swing.JButton();
         jPPreview = new javax.swing.JPanel();
         jTPPreview = new javax.swing.JTabbedPane();
-        jPSegmented = new javax.swing.JPanel();
-        jPCorrectons = new javax.swing.JPanel();
         jPResults = new javax.swing.JPanel();
+        jPCorrectons = new javax.swing.JPanel();
+        jPSegmented = new javax.swing.JPanel();
         jPButtons = new javax.swing.JPanel();
         jBPrevious = new javax.swing.JButton();
         jBNextPreview = new javax.swing.JButton();
@@ -198,6 +197,91 @@ public class Configurations extends javax.swing.JDialog {
         setResizable(false);
 
         jTabbedPane1.setBorder(javax.swing.BorderFactory.createEtchedBorder(javax.swing.border.EtchedBorder.RAISED));
+
+        thresholdingMethod.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Huang", "LocalThesholding" }));
+
+        jLabel1.setText("Correction");
+
+        bgCorrectCheck.setText("Background correction");
+
+        jLabel7.setText("Head finding");
+
+        buttonGroup1.add(headFindingAuto);
+        headFindingAuto.setText("Auto");
+
+        buttonGroup1.add(headFindingProfile);
+        headFindingProfile.setText("Profile analysis");
+
+        buttonGroup1.add(headFindingBrightest);
+        headFindingBrightest.setText("Brigthest region");
+
+        jLabel12.setText("Method");
+
+        javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
+        jPanel2.setLayout(jPanel2Layout);
+        jPanel2Layout.setHorizontalGroup(
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel2Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel12, javax.swing.GroupLayout.PREFERRED_SIZE, 202, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                        .addComponent(headFindingBrightest)
+                        .addComponent(headFindingProfile)
+                        .addComponent(headFindingAuto)
+                        .addComponent(jLabel7)
+                        .addGroup(jPanel2Layout.createSequentialGroup()
+                            .addGap(200, 200, 200)
+                            .addComponent(jSeparator6))
+                        .addGroup(jPanel2Layout.createSequentialGroup()
+                            .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                                .addComponent(jLabel1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(jSeparator4, javax.swing.GroupLayout.Alignment.LEADING)
+                                .addComponent(thresholdingMethod, javax.swing.GroupLayout.Alignment.LEADING, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(bgCorrectCheck, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 202, Short.MAX_VALUE))
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                            .addComponent(jSeparator5, javax.swing.GroupLayout.PREFERRED_SIZE, 194, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addComponent(jSeparator9, javax.swing.GroupLayout.PREFERRED_SIZE, 194, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jSeparator7, javax.swing.GroupLayout.PREFERRED_SIZE, 194, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+        jPanel2Layout.setVerticalGroup(
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel2Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(jSeparator5, javax.swing.GroupLayout.PREFERRED_SIZE, 0, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addComponent(jLabel12, javax.swing.GroupLayout.PREFERRED_SIZE, 19, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jSeparator4, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(1, 1, 1)
+                        .addComponent(thresholdingMethod, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 19, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(1, 1, 1)
+                        .addComponent(jSeparator9, javax.swing.GroupLayout.PREFERRED_SIZE, 6, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(bgCorrectCheck)))
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addGap(162, 162, 162)
+                        .addComponent(jSeparator6, javax.swing.GroupLayout.PREFERRED_SIZE, 0, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(jLabel7)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jSeparator7, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(headFindingAuto)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(headFindingProfile)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(headFindingBrightest)))
+                .addContainerGap(41, Short.MAX_VALUE))
+        );
+
+        jTabbedPane1.addTab("Thresholding", jPanel2);
 
         jLabel3.setText("Minimun Convexity");
 
@@ -308,91 +392,6 @@ public class Configurations extends javax.swing.JDialog {
 
         jTabbedPane1.addTab("Comet Finding", jPanel1);
 
-        thresholdingMethod.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Huang" }));
-
-        jLabel1.setText("Correction");
-
-        bgCorrectCheck.setText("Background correction");
-
-        jLabel7.setText("Head finding");
-
-        buttonGroup1.add(headFindingAuto);
-        headFindingAuto.setText("Auto");
-
-        buttonGroup1.add(headFindingProfile);
-        headFindingProfile.setText("Profile analysis");
-
-        buttonGroup1.add(headFindingBrightest);
-        headFindingBrightest.setText("Brigthest region");
-
-        jLabel12.setText("Method");
-
-        javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
-        jPanel2.setLayout(jPanel2Layout);
-        jPanel2Layout.setHorizontalGroup(
-            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel2Layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel12, javax.swing.GroupLayout.PREFERRED_SIZE, 202, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                        .addComponent(headFindingBrightest)
-                        .addComponent(headFindingProfile)
-                        .addComponent(headFindingAuto)
-                        .addComponent(jLabel7)
-                        .addGroup(jPanel2Layout.createSequentialGroup()
-                            .addGap(200, 200, 200)
-                            .addComponent(jSeparator6))
-                        .addGroup(jPanel2Layout.createSequentialGroup()
-                            .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                                .addComponent(jLabel1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addComponent(jSeparator4, javax.swing.GroupLayout.Alignment.LEADING)
-                                .addComponent(thresholdingMethod, javax.swing.GroupLayout.Alignment.LEADING, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addComponent(bgCorrectCheck, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 202, Short.MAX_VALUE))
-                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                            .addComponent(jSeparator5, javax.swing.GroupLayout.PREFERRED_SIZE, 194, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                    .addComponent(jSeparator9, javax.swing.GroupLayout.PREFERRED_SIZE, 194, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jSeparator7, javax.swing.GroupLayout.PREFERRED_SIZE, 194, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
-        jPanel2Layout.setVerticalGroup(
-            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel2Layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jSeparator5, javax.swing.GroupLayout.PREFERRED_SIZE, 0, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addGroup(jPanel2Layout.createSequentialGroup()
-                        .addComponent(jLabel12, javax.swing.GroupLayout.PREFERRED_SIZE, 19, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jSeparator4, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(1, 1, 1)
-                        .addComponent(thresholdingMethod, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 19, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(1, 1, 1)
-                        .addComponent(jSeparator9, javax.swing.GroupLayout.PREFERRED_SIZE, 6, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(bgCorrectCheck)))
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(jPanel2Layout.createSequentialGroup()
-                        .addGap(162, 162, 162)
-                        .addComponent(jSeparator6, javax.swing.GroupLayout.PREFERRED_SIZE, 0, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(jPanel2Layout.createSequentialGroup()
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(jLabel7)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jSeparator7, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(headFindingAuto)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(headFindingProfile)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(headFindingBrightest)))
-                .addContainerGap(41, Short.MAX_VALUE))
-        );
-
-        jTabbedPane1.addTab("Thresholding", jPanel2);
-
         jButton2.setText("Restart to default");
         jButton2.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -409,18 +408,18 @@ public class Configurations extends javax.swing.JDialog {
 
         jTPPreview.setBorder(javax.swing.BorderFactory.createEtchedBorder());
 
-        javax.swing.GroupLayout jPSegmentedLayout = new javax.swing.GroupLayout(jPSegmented);
-        jPSegmented.setLayout(jPSegmentedLayout);
-        jPSegmentedLayout.setHorizontalGroup(
-            jPSegmentedLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+        javax.swing.GroupLayout jPResultsLayout = new javax.swing.GroupLayout(jPResults);
+        jPResults.setLayout(jPResultsLayout);
+        jPResultsLayout.setHorizontalGroup(
+            jPResultsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGap(0, 598, Short.MAX_VALUE)
         );
-        jPSegmentedLayout.setVerticalGroup(
-            jPSegmentedLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+        jPResultsLayout.setVerticalGroup(
+            jPResultsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGap(0, 346, Short.MAX_VALUE)
         );
 
-        jTPPreview.addTab("Segmented", jPSegmented);
+        jTPPreview.addTab("Results", jPResults);
 
         javax.swing.GroupLayout jPCorrectonsLayout = new javax.swing.GroupLayout(jPCorrectons);
         jPCorrectons.setLayout(jPCorrectonsLayout);
@@ -435,18 +434,18 @@ public class Configurations extends javax.swing.JDialog {
 
         jTPPreview.addTab("Corrections", jPCorrectons);
 
-        javax.swing.GroupLayout jPResultsLayout = new javax.swing.GroupLayout(jPResults);
-        jPResults.setLayout(jPResultsLayout);
-        jPResultsLayout.setHorizontalGroup(
-            jPResultsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+        javax.swing.GroupLayout jPSegmentedLayout = new javax.swing.GroupLayout(jPSegmented);
+        jPSegmented.setLayout(jPSegmentedLayout);
+        jPSegmentedLayout.setHorizontalGroup(
+            jPSegmentedLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGap(0, 598, Short.MAX_VALUE)
         );
-        jPResultsLayout.setVerticalGroup(
-            jPResultsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 346, Short.MAX_VALUE)
+        jPSegmentedLayout.setVerticalGroup(
+            jPSegmentedLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 348, Short.MAX_VALUE)
         );
 
-        jTPPreview.addTab("Results", jPResults);
+        jTPPreview.addTab("Segmented", jPSegmented);
 
         jBPrevious.setText("Previous");
         jBPrevious.addActionListener(new java.awt.event.ActionListener() {
@@ -454,6 +453,7 @@ public class Configurations extends javax.swing.JDialog {
                 jBPreviousActionPerformed(evt);
             }
         });
+        jPButtons.add(jBPrevious);
 
         jBNextPreview.setText("Next");
         jBNextPreview.addActionListener(new java.awt.event.ActionListener() {
@@ -461,26 +461,7 @@ public class Configurations extends javax.swing.JDialog {
                 jBNextPreviewActionPerformed(evt);
             }
         });
-
-        javax.swing.GroupLayout jPButtonsLayout = new javax.swing.GroupLayout(jPButtons);
-        jPButtons.setLayout(jPButtonsLayout);
-        jPButtonsLayout.setHorizontalGroup(
-            jPButtonsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPButtonsLayout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(jBPrevious, javax.swing.GroupLayout.PREFERRED_SIZE, 90, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, 18)
-                .addComponent(jBNextPreview, javax.swing.GroupLayout.PREFERRED_SIZE, 90, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(203, 203, 203))
-        );
-        jPButtonsLayout.setVerticalGroup(
-            jPButtonsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPButtonsLayout.createSequentialGroup()
-                .addGap(0, 0, Short.MAX_VALUE)
-                .addGroup(jPButtonsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jBPrevious)
-                    .addComponent(jBNextPreview)))
-        );
+        jPButtons.add(jBNextPreview);
 
         javax.swing.GroupLayout jPPreviewLayout = new javax.swing.GroupLayout(jPPreview);
         jPPreview.setLayout(jPPreviewLayout);
@@ -552,12 +533,16 @@ public class Configurations extends javax.swing.JDialog {
         this.SaveProperties();
         this.loadProperties();
         this.Principal.setProperties(this.properties);
-        this.Images = this.Principal.getPreview();
-        this.SetImagePreview(this.jPSegmented, this.Images[SEGMENTED_PREVIEW]);
-        this.SetImagePreview(this.jPCorrectons, this.Images[CORRECTION_PREVIEW]);
-        this.SetImagePreview(this.jPResults, this.Images[RESULTS_PREVIEW]);
+        this.Images = this.Principal.getPreview();        
+        this.SetImages();
     }
-
+    
+    private void SetImages(){
+        this.SetImagePreview(this.jPResults, this.Images[Configurations.RESULTS_PREVIEW]);
+        this.SetImagePreview(this.jPCorrectons, this.Images[Configurations.CORRECTION_PREVIEW]);
+        this.SetImagePreview(this.jPSegmented, this.Images[Configurations.SEGMENTED_PREVIEW]);
+    }
+    
     private void SetImagePreview(javax.swing.JPanel panel, ImagePlus img) {
         panel.removeAll();
         Image image = img.getImage();
@@ -732,7 +717,6 @@ void SaveDefaultProperties() {
         InputStream input = null;
         try {
             input = new FileInputStream("config.properties");
-            ij.IJ.log("Settings ready");
             properties.load(input);
         } catch (FileNotFoundException ex) {
             ij.IJ.log("Loading Default Settings");

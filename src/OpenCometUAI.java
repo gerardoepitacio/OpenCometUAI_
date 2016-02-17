@@ -80,22 +80,22 @@ public class OpenCometUAI extends javax.swing.JFrame implements MouseListener {
      * Start a new OpenComet window.
      */
     public static void startJDialog() {
-        try {
-            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-                if ("Nimbus".equals(info.getName())) {
-                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
-                    break;
-                }
-            }
-        } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(OpenCometUAI.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(OpenCometUAI.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(OpenCometUAI.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(OpenCometUAI.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        }
+//        try {
+//            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
+//                if ("Nimbus".equals(info.getName())) {
+//                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
+//                    break;
+//                }
+//            }
+//        } catch (ClassNotFoundException ex) {
+//            java.util.logging.Logger.getLogger(OpenCometUAI.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+//        } catch (InstantiationException ex) {
+//            java.util.logging.Logger.getLogger(OpenCometUAI.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+//        } catch (IllegalAccessException ex) {
+//            java.util.logging.Logger.getLogger(OpenCometUAI.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+//        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
+//            java.util.logging.Logger.getLogger(OpenCometUAI.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+//        }
 
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
@@ -155,6 +155,7 @@ public class OpenCometUAI extends javax.swing.JFrame implements MouseListener {
         jMenuItem3 = new javax.swing.JMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+        setTitle("OpenComet");
 
         jPanel1.setBorder(null);
 
@@ -181,9 +182,11 @@ public class OpenCometUAI extends javax.swing.JFrame implements MouseListener {
 
         buttonGroup1.add(headFindingBrightest);
         headFindingBrightest.setText("Brigthest region");
+        headFindingBrightest.setEnabled(false);
 
         buttonGroup1.add(headFindingProfile);
         headFindingProfile.setText("Profile analysis");
+        headFindingProfile.setEnabled(false);
         headFindingProfile.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 headFindingProfileActionPerformed(evt);
@@ -193,10 +196,12 @@ public class OpenCometUAI extends javax.swing.JFrame implements MouseListener {
         buttonGroup1.add(headFindingAuto);
         headFindingAuto.setSelected(true);
         headFindingAuto.setText("Auto");
+        headFindingAuto.setEnabled(false);
 
         jLabel7.setText("Head finding");
 
         bgCorrectCheck.setText("Background correction");
+        bgCorrectCheck.setEnabled(false);
 
         jLabel6.setText("Comet finding");
 
@@ -371,7 +376,7 @@ public class OpenCometUAI extends javax.swing.JFrame implements MouseListener {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 0, Short.MAX_VALUE))
+                .addContainerGap(9, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -492,7 +497,7 @@ public class OpenCometUAI extends javax.swing.JFrame implements MouseListener {
     private void jMenuItem1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem1ActionPerformed
         // TODO add your handling code here:
         IJ.log("Welcome to OpenComet");
-        startJDialog();
+        OpenCometUAI.startJDialog();
     }//GEN-LAST:event_jMenuItem1ActionPerformed
 
     private void jMenuItem2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem2ActionPerformed
@@ -575,8 +580,8 @@ public class OpenCometUAI extends javax.swing.JFrame implements MouseListener {
                     IJ.log("No comets in image stored.");
                 }
                 ImagePlus PreviewCommets[] = new ImagePlus[4];
-                imp = IJ.openImage(inFiles[this.CurrentPreview].getPath());;
-                ImagePlus PreviewSegmented[] = analizer.GetPreview(imp, properties);
+                ImagePlus PreviewImage = IJ.openImage(inFiles[this.CurrentPreview].getPath());
+                ImagePlus PreviewSegmented[] = analizer.GetPreview(PreviewImage, properties);
                 System.arraycopy(PreviewSegmented, 0, PreviewCommets, 0, PreviewSegmented.length);
                 PreviewCommets[3] = img_out;
                 IJ.log("Preview complete, image key: " + imageKey);
@@ -818,11 +823,11 @@ public class OpenCometUAI extends javax.swing.JFrame implements MouseListener {
         if (cometsOut != null && cometsOut.length > 0) {
             Comets.put(img_out, cometsOut);
 
-            for (int j = 0; j < cometsOut.length; j++) {
-                if (cometsOut[j].status == Comet.VALID) {
-                    printArray(cometsOut[j].cometProfile);
-                }
-            }
+//            for (int j = 0; j < cometsOut.length; j++) {
+//                if (cometsOut[j].status == Comet.VALID) {
+//                    printArray(cometsOut[j].cometProfile);
+//                }
+//            }
 
             Overlay cometOverlay = new Overlay();
             drawComets(ip_out, cometOverlay, cometsOut);

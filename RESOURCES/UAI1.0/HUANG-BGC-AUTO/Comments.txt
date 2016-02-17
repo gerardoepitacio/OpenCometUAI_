@@ -1,0 +1,1 @@
+These are the original results when a grayscale is obtained instead of only one layer of the image.

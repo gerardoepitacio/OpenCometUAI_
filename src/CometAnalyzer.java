@@ -47,8 +47,6 @@ public class CometAnalyzer {
         ByteProcessor ip_gs_template = getGrayscaleCopy(ip, imgOriginalType);
         ByteProcessor ip_gs = getGrayscaleCopy(ip_gs_template, ImagePlus.GRAY8);
         ByteProcessor ip_gs2 = getGrayscaleCopy(ip_gs_template, ImagePlus.GRAY8);
-
-        ImagePreview[0] = new ImagePlus("ORIGINAL", ip_gs.duplicate());
         ImagePlus img_gs = new ImagePlus("tmpimg", ip_gs);
         //----- Global background correction-----                
         if (this.IsSelected("bgCorrectCheck") == true) {
@@ -60,22 +58,47 @@ public class CometAnalyzer {
             bSub.rollingBallBackground(ip_gs, radiusRollingBall, false,
                     false, false, false, true);
         }
-
-        ImagePreview[1] = new ImagePlus("BG-CORRECTION", ip_gs.duplicate());
-
+        
         // ----- First round of Comet finding ------------
         Vector<Comet> Comets = new Vector<Comet>();
         switch (this.GetIntegerProperty("thresholdingMethod")) {
-            case 0:
+           case 0:
+                // Threshold finding
+               IJ.log("Huang");
                 ip_gs.setAutoThreshold("Huang", true, ImageProcessor.BLACK_AND_WHITE_LUT);
                 // Binarization
-                double threshValue = ip_gs.getMinThreshold();
-                setThreshold(ip_gs, (int) threshValue);
+                //double threshValue = ip_gs.getMinThreshold();
+                //setThreshold(ip_gs, (int) threshValue);
                 // Morphology
-                open_ntimes(ip_gs, 3, 0);
+                this.close_ntimes(ip_gs, 3);
+                break;
+            case 1:
+                IJ.log("Local T");
+                this.localThresholding(ip_gs);
+                // Morphology
+                this.close_ntimes(ip_gs, 1);
                 break;
         }
-        ImagePreview[2] = new ImagePlus("BINARIZATION", ip_gs.duplicate());
+        
+        int paopts= 0;
+        boolean cometClearEdges = IsSelected("cometClearEdges");
+        if(cometClearEdges){
+         paopts = ParticleAnalyzer.SHOW_NONE
+                | ParticleAnalyzer.EXCLUDE_EDGE_PARTICLES
+                | ParticleAnalyzer.INCLUDE_HOLES;  
+        }else{
+        paopts = ParticleAnalyzer.SHOW_NONE|ParticleAnalyzer.INCLUDE_HOLES;
+        }
+        
+        ImagePreview[0] = new ImagePlus("THRESHOLD_BYTE_PROCESSOR", ip_gs.duplicate());        
+        ImagePreview[1] = new ImagePlus("THRESHOLD", (Image)ip_gs.getBufferedImage());
+        CometParticleAnalyzer pa = new CometParticleAnalyzer(paopts, 0, null, 400, Double.POSITIVE_INFINITY, 0, 1);
+        // Run particle finding
+        pa.analyze(new ImagePlus("FOR_ANALYZER", ip_gs));
+        // Get ROIs
+        Roi[] cometRois = pa.getCometRois();
+        IJ.log("Number of ROIs found: " + cometRois.length);
+        ImagePreview[2] = pa.getOutputImage();
         return ImagePreview;
     }
 
@@ -93,7 +116,7 @@ public class CometAnalyzer {
         //-----------------------------
 
         ImagePlus img_gs = new ImagePlus("tmpimg", ip_gs);
-
+        
         //----- Global background correction-----                
         if (this.IsSelected("bgCorrectCheck") == true) {
             RankFilters rf = new RankFilters();
@@ -109,40 +132,55 @@ public class CometAnalyzer {
         // ----- First round of Comet finding ------------
         Vector<Comet> Comets = new Vector<Comet>();
         switch (this.GetIntegerProperty("thresholdingMethod")) {
-            case 0:
+           case 0:
                 // Threshold finding
+               IJ.log("Huang");
                 ip_gs.setAutoThreshold("Huang", true, ImageProcessor.BLACK_AND_WHITE_LUT);
                 // Binarization
-                double threshValue = ip_gs.getMinThreshold();
-                setThreshold(ip_gs, (int) threshValue);
+                //double threshValue = ip_gs.getMinThreshold();
+                //setThreshold(ip_gs, (int) threshValue);
                 // Morphology
-                open_ntimes(ip_gs, 3, 0);
+                this.close_ntimes(ip_gs, 3);
+                break;
+            case 1:
+                IJ.log("Local T");
+                this.localThresholding(ip_gs);
+                // Morphology
+                this.close_ntimes(ip_gs, 1);
                 break;
         }
         // Setup particle analyzer
-        int paopts = ParticleAnalyzer.SHOW_NONE
+        int paopts= 0;
+        boolean cometClearEdges = IsSelected("cometClearEdges");
+        if(cometClearEdges){
+         paopts = ParticleAnalyzer.SHOW_NONE
                 | ParticleAnalyzer.EXCLUDE_EDGE_PARTICLES
-                | ParticleAnalyzer.INCLUDE_HOLES;
-        CometParticleAnalyzer pa
-                = new CometParticleAnalyzer(paopts, 0, null, 400, Double.POSITIVE_INFINITY, 0, 1);
+                | ParticleAnalyzer.INCLUDE_HOLES;  
+        }else{
+        paopts = ParticleAnalyzer.SHOW_NONE|ParticleAnalyzer.INCLUDE_HOLES;
+        }
+        
+        CometParticleAnalyzer pa = new CometParticleAnalyzer(paopts, 0, null, 400, Double.POSITIVE_INFINITY, 0, 1);
         // Run particle finding
-        pa.analyze(img_gs, ip_gs);
+        pa.analyze(new ImagePlus("FOR_ANALYZER", ip_gs));
         // Get ROIs
         Roi[] cometRois = pa.getCometRois();
         IJ.log("Number of ROIs found: " + cometRois.length);
         // Add ROIs as comets
         for (int i = 0; i < cometRois.length; i++) {
-            Comets.add(new Comet(cometRois[i]));
+            // Create a comet and Calculate comet parameters
+            Comets.add(setCometParams(new Comet(cometRois[i]), ip_gs2));
         }
         // Calculate comet parameters
-        for (int i = 0; i < Comets.size(); i++) {
-            setCometParams(Comets.get(i), ip_gs2);
-        }
+//        for (int i = 0; i < Comets.size(); i++) {
+//            setCometParams(Comets.get(i), ip_gs2);
+//        }
 
-        for (int i = 0; i < Comets.size(); i++) {
-            Comet comet = Comets.get(i);
-            IJ.log(comet.convexity + "," + comet.centerlineDiff);
-        }
+//        for (int i = 0; i < Comets.size(); i++) {
+//            Comet comet = Comets.get(i);
+//            IJ.log(comet.convexity + "," + comet.centerlineDiff);
+//        }
+        
         // Set validity status of each comet based on parameters
         int validCount = setValidity(Comets, ip_gs2);
         // If there are no valid comets, stop
@@ -344,6 +382,59 @@ public class CometAnalyzer {
         return (Comet[]) Comets.toArray(new Comet[Comets.size()]);
     }
 
+    /**
+     * Set the localThresholding method
+     *
+     * @param ip is the image procesor.
+     */
+    private void localThresholding(ByteProcessor ip) {
+        Rectangle roi = ip.getRoi();
+        Rectangle br = roi.getBounds();
+        double pix;
+        double sum = 0;
+        int t = 0;
+        //mean of global image
+        for (int y = br.y; y < (br.y + br.height); y++) {
+            for (int x = br.x; x < (br.x + br.width); x++) {
+                pix = ip.getPixelValue(x, y);
+                sum = sum + pix;
+                ++t;
+            }
+        }
+        double b = 1.1;
+        //double b = 1.2;
+        double mean = sum /(double) (ip.getHeight() * ip.getWidth());
+        IJ.log("SUM=" + sum);
+        IJ.log("NUMBERS OF PIXELS=" + t);
+        IJ.log("MEAN=" + mean);
+        IJ.log("WIDTH=" + ip.getWidth());
+        IJ.log("HEIGHT=" + ip.getHeight());
+        IJ.log("T=" + (int)Math.round(b * mean));
+        IJ.log("maxT:" + ip.getMax());
+        IJ.log("in Thresolded LUT: "+ip.isInvertedLut());
+        ip.setThreshold(Math.round(b * mean), ip.getMax(), ImageProcessor.BLACK_AND_WHITE_LUT);
+        
+//        for (int y = br.y; y < (br.y + br.height); y++) {
+//            for (int x = br.x; x < (br.x + br.width); x++) {
+//                pix = ip.getPixelValue(x, y);
+//                if (pix > b * mean) {
+//                    /*Test environment*/
+//                    //ip.putPixelValue(x, y, 255);
+//                    
+//                    /*Production environment*/
+//                    ip.putPixelValue(x, y, 0);
+//                } else {
+//                    /*Test environment*/
+//                    //ip.putPixelValue(x, y, 0);
+//                    
+//                    /*Production environment*/
+//                    ip.putPixelValue(x, y, 255);
+//
+//                }
+//            }
+//        }
+    }
+
     private Boolean IsSelected(String P) {
         if (this.Options.containsKey(P)) {
             return this.Options.getProperty(P).equals("true");
@@ -519,7 +610,7 @@ public class CometAnalyzer {
 
     }
 
-    private void setCometParams(Comet comet, ImageProcessor ip) {
+    private Comet setCometParams(Comet comet, ImageProcessor ip) {
         ip.setRoi(comet.cometRoi);
         ImageStatistics stats = ip.getStatistics();
 
@@ -546,6 +637,7 @@ public class CometAnalyzer {
         ip.setRoi(roiConvexHull);
         comet.areaConvexHull = ip.getStatistics().area;
         comet.convexity = (comet.area / comet.areaConvexHull);
+        return comet;
     }
 
     private Rectangle getBinaryBoundRect(ImageProcessor ip) {
@@ -616,8 +708,8 @@ public class CometAnalyzer {
             }
             colAvg[i] /= boundRect.height;
         }
-        IJ.log("Col average: ");
-        printArray(colAvg);
+        //IJ.log("Col average: ");
+        //printArray(colAvg);
         return colAvg;
     }
 
@@ -697,46 +789,71 @@ public class CometAnalyzer {
         double cometMaxCLDOutler = GetDoubleProperty("cometMaxCLDOutler");
         double cometMaxCLDBig = GetDoubleProperty("cometMaxCLDBig");
         boolean cometClearEdges = IsSelected("cometClearEdges");
-
+        String Tittles = String.format("%5s%15s%15s%15s%15s%15s%15s%15s%15s",
+                "#", "Conv ", "Sym ", "HRatio ", "Edge ", "CLDOut ", "CLDBig ", "Area ", "Status");
+        IJ.log(Tittles);
+        String Log = "";
+        String Valid = " ";
         for (int i = 0; i < Comets.size(); i++) {
             Comet comet = Comets.get(i);
+            
+            Valid = " ";
             // Comet should be convex
+            Log = String.format("%5d", i);
             if (comet.convexity < cometMinConvexity) {
                 comet.status = Comet.INVALID;
-                IJ.log(i + " convexity is too small, invalid (" + comet.convexity + ")");
-            }
+                Valid = "*";
+            }Log += String.format("%14.5f%1s", comet.convexity, Valid);
+
+            Valid = " ";
             // Comet shouldn't be too asymmetrical
             if (comet.symmetry > cometMaxSymmetry) {
                 comet.status = Comet.INVALID;
-                IJ.log(i + " symmetry too big, invalid");
-            }
+                Valid = "*";
+            }Log += String.format("%14.5f%1s", comet.symmetry, Valid);
+            
+            Valid = " ";
             // Comet shouldn't be higher than wide
             if (comet.hratio > cometMaxHRatio) {
                 comet.status = Comet.INVALID;
-                IJ.log(i + " hratio too big, invalid");
-            }
+                Valid = "*";
+            }Log += String.format("%14.5f%1s", comet.hratio, Valid);
+
+            Valid = " ";
             // Comet shouldn't be on border
             if (cometClearEdges && isOnEdge(ip, comet.cometRoi)) {
                 comet.status = Comet.INVALID;
-                IJ.log(i + " is on edge invalid");
-            }
+                Valid = "*";
+            }  Log += String.format("%14s%1s", "EDGE", Valid);
+
+            Valid = " ";
             if (comet.centerlineDiff > cometMaxCLDOutler) {
                 if (comet.status == Comet.VALID) {
                     comet.status = Comet.OUTLIER;
                 }
-                IJ.log(i + " centerline diff too big outlier");
-            }
+                Valid = "*";
+            } Log += String.format("%14.5f%1s", comet.centerlineDiff, Valid);
+
+            Valid = " ";
             if (comet.centerlineDiff > cometMaxCLDBig) {
                 comet.status = Comet.INVALID;
-                IJ.log(i + " centerline diff too big invalid");
-            }
+                Valid = "*";
+                
+            }Log += String.format("%14.5f%1s", comet.centerlineDiff, Valid);
+
+            Valid = " ";
             if (comet.area < cometMinArea) {
                 comet.status = Comet.INVALID;
-                IJ.log(i + " Area is too small, invalid: " + comet.area);
-            }
+                Valid = "*";
+            }Log += String.format("%14.1f%1s", comet.area, Valid);
+
             if (comet.status == Comet.VALID) {
                 validCount++;
+                Log += String.format("%15s", "VALIDO");
+            } else {
+                Log += String.format("%15s", "RECHAZADO");
             }
+            IJ.log(Log);
         }
         return validCount;
     }
@@ -954,23 +1071,45 @@ public class CometAnalyzer {
         }
         IJ.log(s);
     }
-
-    private void open_ntimes(ImageProcessor ip, int n, int dark) {
-        if (dark == 0) {
+    
+    /**
+     * A°B = ((A erode by B) dilate by B), where A is the background pixels (white pixels).
+     * @param ip
+     * @param n 
+     */
+    private void open_ntimes(ImageProcessor ip, int n) {
+        //ip.isInvertedLut()
+        //Returns true if this image uses an inverting LUT that displays zero as white and 255 as black.
+         //By Juan Luis Dias de Leon Santiago, Introduccion a la Morf. Mat.
+            //For opening =  A°B = ((A erode by B) dilate by B)
+             for (int i = 0; i < n; i++) {
+                ip.erode();
+            }
             for (int i = 0; i < n; i++) {
                 ip.dilate();
             }
+    }
+    
+    /**
+     * A.B = ((A dilate by B) erode by B), where A is the background pixels (white pixels).
+     * @param ip
+     * @param n 
+     */
+    private void close_ntimes(ImageProcessor ip, int n) {
+         //By Juan Luis Dias de Leon Santiago, Introduccion a la Morf. Mat.
+            //For closing =  A.B = ((A dilate by B) erode by B)
+             for (int i = 0; i < n; i++) {
+                 /**
+                  * Erode the pixels of the background, by default, white pixels are the background.
+                  */
+                 ip.dilate();
+            }
             for (int i = 0; i < n; i++) {
+                /**
+                  * Erode the pixels of the background, by default, white pixels are the background.
+                  */
                 ip.erode();
             }
-        } else {
-            for (int i = 0; i < n; i++) {
-                ip.erode();
-            }
-            for (int i = 0; i < n; i++) {
-                ip.dilate();
-            }
-        }
     }
 
     private int getHeadEdge(ImageProcessor ip, Comet comet) {
@@ -987,7 +1126,7 @@ public class CometAnalyzer {
 
         double[] cometProfile = getColumnAvg(ip, comet.cometRoi, profileRect);
 
-        printArray(cometProfile);
+        //printArray(cometProfile);
 
         int kernelWidth = (int) boundRect.width / 10;
         double[] smoothKernel = new double[kernelWidth];
@@ -996,16 +1135,16 @@ public class CometAnalyzer {
 
         // Smooth comet profile
         double[] y1 = convFilter(cometProfile, smoothKernel, true);
-        printArray(y1);
+        //printArray(y1);
         // Differentiate comet profile
         double[] y2 = convFilter(y1, diffKernel, false);
-        printArray(y2);
+        //printArray(y2);
         // Smooth differential
         double[] y3 = convFilter(y2, smoothKernel, true);
-        printArray(y3);
+        //printArray(y3);
         // Differentiate again
         double[] y4 = convFilter(y3, diffKernel, false);
-        printArray(y4);
+        //printArray(y4);
         // Smooth again
         double[] ddCometProfile = convFilter(y4, smoothKernel, true);
         IJ.log("Kernel width: " + kernelWidth);
@@ -1150,28 +1289,16 @@ public class CometAnalyzer {
             gAvgInt += (double) gPix[i] / size;
             bPix[i] = (byte) (ipPix[i] & 0x0000ff);
             bAvgInt += (double) bPix[i] / size;
+            
+            int r = (rPix[i] & 0xFF);
+            int g = (gPix[i] & 0xFF);
+            int b = (bPix[i] & 0xFF);
+            
+            double mean = (r + g + b) / 3.0;
+            bpPix[i] = (byte) ((byte) Math.round(mean) & 0xFF);
+            
             //bpPix[i] = (byte)((ipPix[i] & 0x00ff00)>>>8);
         }
-
-        IJ.log("Red: " + rAvgInt + ", green:" + gAvgInt + ", blue: " + bAvgInt);
-        boolean rg = (rAvgInt > gAvgInt);
-        boolean rb = (rAvgInt > bAvgInt);
-        boolean gb = (gAvgInt > bAvgInt);
-
-        if (rg && rb) {
-            for (int i = 0; i < size; i++) {
-                bpPix[i] = rPix[i];
-            }
-        } else if (!rg && gb) {
-            for (int i = 0; i < size; i++) {
-                bpPix[i] = gPix[i];
-            }
-        } else {
-            for (int i = 0; i < size; i++) {
-                bpPix[i] = bPix[i];
-            }
-        }
-
         return bp;
     }
 
