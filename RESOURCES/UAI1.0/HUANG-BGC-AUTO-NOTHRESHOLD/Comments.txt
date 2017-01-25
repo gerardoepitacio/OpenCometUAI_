@@ -1,6 +1,0 @@
-The binarization of values in the ByteProcessor Object 
-in CometAnalyzer class waren't necessary because the BufferedImage object had already been affected in the process.
-
-In this spreadsheet the measurements are the same like in the first test ( with binarization of values in ByteProcessor Object). 
-
-Folder for comparison: HUANG-BGC-AUTO

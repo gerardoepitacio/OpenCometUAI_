@@ -40,6 +40,7 @@ public class CometAnalyzer {
     Properties Options;
 
     public ImagePlus[] GetPreview(ImagePlus img_orig, Properties Options) {
+        IJ.log("***** Analyzer *****");
         ImagePlus[] ImagePreview = new ImagePlus[3];
         this.Options = Options;
         ImageProcessor ip = img_orig.getProcessor();
@@ -67,8 +68,8 @@ public class CometAnalyzer {
                IJ.log("Huang");
                 ip_gs.setAutoThreshold("Huang", true, ImageProcessor.BLACK_AND_WHITE_LUT);
                 // Binarization
-                //double threshValue = ip_gs.getMinThreshold();
-                //setThreshold(ip_gs, (int) threshValue);
+                double threshValue = ip_gs.getMinThreshold();
+                setThreshold(ip_gs, (int) threshValue);
                 // Morphology
                 this.close_ntimes(ip_gs, 3);
                 break;
@@ -103,6 +104,7 @@ public class CometAnalyzer {
     }
 
     public Comet[] cometAnalyzerRun(ImagePlus img_orig, Properties Options) {
+        IJ.log("***** Analyzer *****");
         this.Options = Options;
         // ----- Setting up given image
         ImageProcessor ip = img_orig.getProcessor();
@@ -137,8 +139,8 @@ public class CometAnalyzer {
                IJ.log("Huang");
                 ip_gs.setAutoThreshold("Huang", true, ImageProcessor.BLACK_AND_WHITE_LUT);
                 // Binarization
-                //double threshValue = ip_gs.getMinThreshold();
-                //setThreshold(ip_gs, (int) threshValue);
+                double threshValue = ip_gs.getMinThreshold();
+                setThreshold(ip_gs, (int) threshValue);
                 // Morphology
                 this.close_ntimes(ip_gs, 3);
                 break;
@@ -167,9 +169,9 @@ public class CometAnalyzer {
         Roi[] cometRois = pa.getCometRois();
         IJ.log("Number of ROIs found: " + cometRois.length);
         // Add ROIs as comets
-        for (int i = 0; i < cometRois.length; i++) {
+        for (Roi cometRoi : cometRois) {
             // Create a comet and Calculate comet parameters
-            Comets.add(setCometParams(new Comet(cometRois[i]), ip_gs2));
+            Comets.add(setCometParams(new Comet(cometRoi), ip_gs2));
         }
         // Calculate comet parameters
 //        for (int i = 0; i < Comets.size(); i++) {
@@ -327,7 +329,9 @@ public class CometAnalyzer {
 
             // Find head
             setupHead(ip_gs2, comet);
-
+//             ImagePlus ImgP = new ImagePlus("Comet", ip_gs.duplicate());
+//            ImgP.setRoi(comet.headRoi, true);
+//            ImgP.show();
             // Background correction
             correctBackground(ip_gs2, comet);
 			// -----------------------
@@ -521,7 +525,7 @@ public class CometAnalyzer {
 
         // --- First stage: find brightest part of comet
         // Get statistics from the comet
-        IJ.log(this.Options.values() + "");
+        IJ.log("Options: "+this.Options.values());
         //if ((cometOptions & HEADFIND_AUTO)!=0 || (cometOptions & HEADFIND_BRIGHTEST)!=0){
         if (this.IsSelected("headFindingAuto") || this.IsSelected("headFindingBrightest")) {
             // Find the threshold at top 5% of histogram intensities
@@ -535,7 +539,7 @@ public class CometAnalyzer {
             // Find borders of the brightest area
             Rectangle brightestBoundRect = getBinaryBoundRect(ipComet);
 
-            IJ.log(brightestBoundRect + "");
+            IJ.log("BrightestRect: "+brightestBoundRect);
             if ((comet.circularity < 0.9) && (brightestBoundRect.width > brightestBoundRect.height * 2)) {
                 IJ.log(comet.id + " head is too long invalid");
                 headValid = false;
@@ -593,7 +597,7 @@ public class CometAnalyzer {
 
             int headEdge = getHeadEdge(ip, comet);
             ip.setRoi(comet.cometRoi);
-
+            
             int headRadius = headEdge / 2;
             headX = comet.x;
             headCenterY = getFrontCentroid(ip);
@@ -609,11 +613,11 @@ public class CometAnalyzer {
         // ----------------------------------------------		
 
     }
-
+    
     private Comet setCometParams(Comet comet, ImageProcessor ip) {
         ip.setRoi(comet.cometRoi);
         ImageStatistics stats = ip.getStatistics();
-
+        
         // Position
         comet.x = (int) stats.roiX;
         comet.y = (int) stats.roiY;
@@ -624,9 +628,9 @@ public class CometAnalyzer {
         comet.histogram = stats.histogram;
         comet.area = stats.area;
         comet.mean = stats.mean;
-        comet.symmetry = ySymmetry(ip);;
+        comet.symmetry = ySymmetry(ip);
         comet.perimeter = comet.cometRoi.getLength();
-        comet.circularity = 4.0 * Math.PI * comet.area / (comet.perimeter * comet.perimeter);;
+        comet.circularity = 4.0 * Math.PI * comet.area / (comet.perimeter * comet.perimeter);
 
         comet.hratio = comet.height / comet.width;
         comet.headFrontCenterY = getFrontCentroid(ip);

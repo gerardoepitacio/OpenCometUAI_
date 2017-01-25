@@ -1,7 +1,7 @@
 
 import ij.IJ;
 import ij.ImageJ;
-import ij.ImagePlus;
+import ij.ImagePlus;    
 import ij.WindowManager;
 import ij.gui.ImageCanvas;
 import ij.gui.ImageWindow;
